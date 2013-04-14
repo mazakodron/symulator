@@ -99,8 +99,8 @@ def test():
     time.sleep(0.001)
   q.put(DROP_MAZAK)
   time.sleep(0.2)
-  for i in range(500):
-    time.sleep(0.01)
+  for i in range(500*8):
+    time.sleep(0.01/8)
     q.put(GO_FORWARD)
   q.put(LIFT_MAZAK)
   time.sleep(0.2)
@@ -109,37 +109,37 @@ def test():
     time.sleep(0.001)
   q.put(DROP_MAZAK)
   time.sleep(0.2)
-  for i in range(200):
-    time.sleep(0.01)
+  for i in range(200*8):
+    time.sleep(0.01/8)
     q.put(GO_FORWARD)
   q.put(LIFT_MAZAK)
   time.sleep(0.2)
   for i in range(425*8):
     q.put(TURN_RIGHT)
     time.sleep(0.001)
-  for i in range(600):
-    time.sleep(0.01)
+  for i in range(600*8):
+    time.sleep(0.01/8)
     q.put(GO_BACKWARD)
   for i in range(425*8):
     q.put(TURN_RIGHT)
     time.sleep(0.001)
   q.put(DROP_MAZAK)
   time.sleep(0.2)
-  for i in range(500):
-    time.sleep(0.01)
+  for i in range(500*8):
+    time.sleep(0.01/8)
     q.put(GO_BACKWARD)
   q.put(LIFT_MAZAK)
   time.sleep(0.2)
   for i in range(425*2*8):
     q.put(TURN_LEFT)
     time.sleep(0.001)
-  for i in range(100):
-    time.sleep(0.01)
+  for i in range(100*8):
+    time.sleep(0.01/8)
     q.put(GO_FORWARD)
   q.put(DROP_MAZAK)
   time.sleep(0.2)
-  for i in range(500):
-    time.sleep(0.01)
+  for i in range(500*8):
+    time.sleep(0.01/8)
     q.put(GO_FORWARD)
   q.put(LIFT_MAZAK)
   time.sleep(0.2)
