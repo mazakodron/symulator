@@ -3,9 +3,45 @@ import Qt 4.7
 Rectangle {
 
     property bool mazak_down: false;
+    property bool robot_hidden: false;
+    property double constROBOT_R: 119.5;
+    property double constWHEEL_R: 18.0;
+    property double constREV_STEP: 1.0/512.0;
+    property double constSTEP: 0.220875/8;
 
-    function moveMazakodron(x, y, angle) {
+    function draw() {
+      if (mazak_down) {
+        Qt.createQmlObject('import Qt 4.7; Rectangle {'+
+          'color: "black";'+
+          'width: drawing.width*0.01;'+
+          'height: drawing.height*(view.constSTEP/210);'+
+          'x: drawing.width*'+mazak.xPos+';'+
+          'y: drawing.height*'+mazak.yPos+';'+
+          'rotation: '+mazak.rotation+';'+
+        '}', drawing, "line");
+        // dirty hack, FIXME!
+      }
+    }
+    function goForward() {
+      draw();
+      var angle = (mazak.rotation/360)*2*3.14;
+      mazak.xPos += (-constSTEP * Math.sin(angle))/297;
+      mazak.yPos += (constSTEP * Math.cos(angle))/210;
+    }
 
+    function goBackward() {
+      draw();
+      var angle = (mazak.rotation/360)*2*3.14;
+      mazak.xPos -= (-constSTEP * Math.sin(angle))/297;
+      mazak.yPos -= (constSTEP * Math.cos(angle))/210;
+    }
+
+    function rotateLeft() {
+      mazak.rotation -= ((constWHEEL_R*constREV_STEP*360)/constROBOT_R)/8;
+    }
+
+    function rotateRight() {
+      mazak.rotation += ((constWHEEL_R*constREV_STEP*360)/constROBOT_R)/8;
     }
 
     function liftMazak() {
@@ -13,7 +49,15 @@ Rectangle {
     }
 
     function dropMazak() {
-      mazak_down = !mazak_down; //true;
+      mazak_down = true;
+    }
+
+    function hideRobot() {
+      robot_hidden = true;
+    }
+
+    function showRobot() {
+      robot_hidden = false;
     }
 
     id: view
@@ -28,15 +72,41 @@ Rectangle {
       height: Math.min(view.height, view.width*0.7)*0.75;
       color: "white";
 
+      Rectangle {
+        id: drawing;
+        anchors.fill: parent;
+        color: "transparent";
+      }
       Image {
+
+        property double xPos: 0;
+        property double yPos: 0;
+
         id: mazak;
 
-        x: 0;//.3*paper.width;
-        y: 0;//.3*paper.height;
+        opacity: 1;
+        x: xPos*paper.width;//.3*paper.width;
+        y: yPos*paper.height;//.3*paper.height;
         width: 0;
         height: 0;
         rotation: 0;
 
+        states: State {
+          name: "hidden"; when: robot_hidden == true;
+          PropertyChanges {
+            target: mazak;
+            opacity: 0
+          }
+        }
+        
+        transitions: Transition {
+          from: ""; to: "hidden"; reversible: true;
+          SequentialAnimation {
+            NumberAnimation { target: mazak; property: "opacity"; duration: 5000; easing.type:Easing.InQuad; }
+          }
+        }
+        
+        
         Image {
             id: mazakodron;
             x: -0.435*paper.width;
@@ -50,7 +120,6 @@ Rectangle {
 
         Image {
 
-          
           id: mazak_img;
           x: -0.036*paper.width;
           y: -0.052*paper.height-(0.12*paper.height);
@@ -70,24 +139,18 @@ Rectangle {
               height: 0.11*paper.height;
             }
           }
-          
-         transitions: Transition {
+
+          transitions: Transition {
             from: ""; to: "down"; reversible: true;
             SequentialAnimation {
               NumberAnimation { target: mazak_img; properties: "x,y,width,height"; duration: 100; easing.type:Easing.InQuad; }
             }
-            
           }
-          
+
         }
-        
-        
+
       }
 
     }
-    
-    MouseArea {
-      anchors.fill: parent
-      onClicked: dropMazak()
-    }
+
 }
