@@ -1,6 +1,8 @@
 import Qt 4.7
 
 Rectangle {
+  
+    signal requestDraw(double x1, double y1, double x2, double y2);
 
     property bool mazak_down: false;
     property bool robot_hidden: false;
@@ -8,32 +10,30 @@ Rectangle {
     property double constWHEEL_R: 18.0;
     property double constREV_STEP: 1.0/512.0;
     property double constSTEP: 0.220875/8;
+    
+    property int counter: 0;
 
-    function draw() {
+    function draw(x1, y1, x2, y2) {
       if (mazak_down) {
-        Qt.createQmlObject('import Qt 4.7; Rectangle {'+
-          'color: "black";'+
-          'width: drawing.width*0.01;'+
-          'height: drawing.height*(view.constSTEP/210);'+
-          'x: drawing.width*'+mazak.xPos+';'+
-          'y: drawing.height*'+mazak.yPos+';'+
-          'rotation: '+mazak.rotation+';'+
-        '}', drawing, "line");
-        // dirty hack, FIXME!
+        requestDraw(x1, y1, x2, y2)
+        counter++;
+        if (counter%128==0) drawing.source="image://mazakodron/drawing"+counter;
       }
     }
     function goForward() {
-      draw();
+      var oldXPos = mazak.xPos, oldYPos = mazak.yPos;
       var angle = (mazak.rotation/360)*2*3.14;
       mazak.xPos += (-constSTEP * Math.sin(angle))/297;
       mazak.yPos += (constSTEP * Math.cos(angle))/210;
+      draw(oldXPos, oldYPos, mazak.xPos, mazak.yPos);
     }
 
     function goBackward() {
-      draw();
+      var oldXPos = mazak.xPos, oldYPos = mazak.yPos;
       var angle = (mazak.rotation/360)*2*3.14;
       mazak.xPos -= (-constSTEP * Math.sin(angle))/297;
       mazak.yPos -= (constSTEP * Math.cos(angle))/210;
+      draw(oldXPos, oldYPos, mazak.xPos, mazak.yPos);
     }
 
     function rotateLeft() {
@@ -46,6 +46,7 @@ Rectangle {
 
     function liftMazak() {
       mazak_down = false;
+      drawing.source="image://mazakodron/drawing"+counter;
     }
 
     function dropMazak() {
@@ -72,10 +73,12 @@ Rectangle {
       height: Math.min(view.height, view.width*0.7)*0.75;
       color: "white";
 
-      Rectangle {
+      Image {
         id: drawing;
         anchors.fill: parent;
-        color: "transparent";
+        source: "image://mazakodron/drawing";
+        smooth: true;
+        asynchronous: false;
       }
       Image {
 
@@ -85,8 +88,8 @@ Rectangle {
         id: mazak;
 
         opacity: 1;
-        x: xPos*paper.width;//.3*paper.width;
-        y: yPos*paper.height;//.3*paper.height;
+        x: xPos*paper.width;
+        y: yPos*paper.height;
         width: 0;
         height: 0;
         rotation: 0;

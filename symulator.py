@@ -8,9 +8,9 @@ try:
 except ImportError:
   import Queue as queue
 
-from PyQt4.QtCore import QTimer, QObject, QUrl
-from PyQt4.QtGui import QApplication
-from PyQt4.QtDeclarative import QDeclarativeView
+from PyQt4.QtCore import QTimer, QObject, QUrl, pyqtProperty, pyqtSignal, QSize, QRect
+from PyQt4.QtGui import QApplication, QImage, QPainter, QColor, QPen
+from PyQt4.QtDeclarative import QDeclarativeView, QDeclarativeImageProvider
 
 TURN_LEFT = 0
 TURN_RIGHT = 1
@@ -29,9 +29,32 @@ def sigint_handler(*args):
 
 signal.signal(signal.SIGINT, sigint_handler)
 
+class ImageProvider(QDeclarativeImageProvider):
+  
+  image = None
+  size = None
+  
+  def __init__(self):
+    QDeclarativeImageProvider.__init__(self, QDeclarativeImageProvider.Image)
+    self.size = QSize(2631/4, 1860/4)
+    self.image = QImage(self.size, QImage.Format_RGB32)
+    self.image.fill(QColor(255,255,255))
+    
+  def draw(self, x1, y1, x2, y2):
+    p = QPainter()
+    p.begin(self.image)
+    p.setPen(QPen(QColor(0,0,0), 5));
+    p.drawLine(x1*self.size.width(), y1*self.size.height(), x2*self.size.width(), y2*self.size.height())
+    p.end()
+    
+  def requestImage(self, id, size, requestedSize):
+    return self.image
+
+
 class Interface(threading.Thread):
 
   rootObject = None
+  imageProvider = None
   
   def __init__(self):
     threading.Thread.__init__(self)
@@ -56,18 +79,25 @@ class Interface(threading.Thread):
 
   def run(self):
     app = QApplication(sys.argv)
+    imageProvider = ImageProvider()
 
     # Create the QML user interface.
     view = QDeclarativeView()
     
     view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
+    engine = view.engine()
+    
+    engine.addImageProvider("mazakodron", imageProvider)
+    
     view.setSource(QUrl('symulator/mazakodron.qml'))
     rootObject = view.rootObject()
     if not rootObject:
       view.setSource(QUrl('mazakodron.qml'))
       rootObject = view.rootObject()
-      
+    
+    rootObject.requestDraw.connect(imageProvider.draw)
+    
     self.rootObject = rootObject
 
     view.setGeometry(0, 0, 800, 600)
