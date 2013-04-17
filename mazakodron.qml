@@ -8,8 +8,8 @@ Rectangle {
     property bool robot_hidden: false;
     property double constROBOT_R: 119.5;
     property double constWHEEL_R: 18.0;
-    property double constREV_STEP: 1.0/512.0;
-    property double constSTEP: 0.220875/8;
+    property double constREV_STEP: 1.0/4096.0;
+    property double constSTEP: 0.220875/8.0;
     
     property int counter: 0;
 
@@ -17,7 +17,7 @@ Rectangle {
       if (mazak_down) {
         requestDraw(x1, y1, x2, y2)
         counter++;
-        if (counter%128==0) drawing.source="image://mazakodron/drawing"+counter;
+        if (counter%256==0) drawing.source="image://mazakodron/drawing"+counter;
       }
     }
     function goForward() {
@@ -37,11 +37,11 @@ Rectangle {
     }
 
     function rotateLeft() {
-      mazak.rotation -= ((constWHEEL_R*constREV_STEP*360)/constROBOT_R)/8;
+      mazak.rotation -= (constWHEEL_R*constREV_STEP*360)/constROBOT_R;
     }
 
     function rotateRight() {
-      mazak.rotation += ((constWHEEL_R*constREV_STEP*360)/constROBOT_R)/8;
+      mazak.rotation += (constWHEEL_R*constREV_STEP*360)/constROBOT_R;
     }
 
     function liftMazak() {
