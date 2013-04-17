@@ -13,12 +13,21 @@ Rectangle {
     property double constSTEP: 0.220875/8.0;
     
     property int counter: 0;
+    
+    Timer {
+      id: timer
+      interval: 250;
+      running: false;
+      repeat: false;
+      triggeredOnStart: true;
+      onTriggered: drawing.source="image://mazakodron/drawing"+counter
+    }
 
     function draw(x1, y1, x2, y2) {
       if (mazak_down) {
         requestDraw(x1, y1, x2, y2)
         counter++;
-        if (counter%256==0) drawing.source="image://mazakodron/drawing"+counter;
+        timer.start()
       }
     }
     function goForward() {
@@ -47,7 +56,7 @@ Rectangle {
 
     function liftMazak() {
       mazak_down = false;
-      drawing.source="image://mazakodron/drawing"+counter;
+      timer.restart()
     }
 
     function dropMazak() {
@@ -79,7 +88,7 @@ Rectangle {
         anchors.fill: parent;
         source: "image://mazakodron/drawing";
         smooth: true;
-        asynchronous: true;
+        asynchronous: false;
       }
       Image {
 
@@ -103,7 +112,7 @@ Rectangle {
           }
         },
         State {
-          name: "transparent"; when: (robot_hidden == false && robot_transparent == true);
+          name: "transparent"; when: robot_transparent == true;
           PropertyChanges {
             target: mazakodron;
             opacity: 0.5
@@ -112,12 +121,12 @@ Rectangle {
         ]
         
         transitions: [ Transition {
-          from: ""; to: "hidden"; reversible: true;
+          from: "*"; to: "hidden"; reversible: true;
           SequentialAnimation {
             NumberAnimation { target: mazak; property: "opacity"; duration: 5000; easing.type:Easing.InQuad; }
           }
         }, Transition {
-          from: ""; to: "transparent"; reversible: true;
+          from: "*"; to: "transparent"; reversible: true;
           SequentialAnimation {
             NumberAnimation { target: mazakodron; property: "opacity"; duration: 500;}
           }
