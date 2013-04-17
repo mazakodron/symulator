@@ -19,7 +19,7 @@ Rectangle {
       interval: 250;
       running: false;
       repeat: false;
-      triggeredOnStart: true;
+      triggeredOnStart: false;
       onTriggered: drawing.source="image://mazakodron/drawing"+counter
     }
 
@@ -56,7 +56,7 @@ Rectangle {
 
     function liftMazak() {
       mazak_down = false;
-      timer.restart()
+      drawing.source="image://mazakodron/drawing"+counter;
     }
 
     function dropMazak() {
