@@ -6,6 +6,7 @@ Rectangle {
 
     property bool mazak_down: false;
     property bool robot_hidden: false;
+    property bool robot_transparent: false;
     property double constROBOT_R: 119.5;
     property double constWHEEL_R: 18.0;
     property double constREV_STEP: 1.0/4096.0;
@@ -78,7 +79,7 @@ Rectangle {
         anchors.fill: parent;
         source: "image://mazakodron/drawing";
         smooth: true;
-        asynchronous: false;
+        asynchronous: true;
       }
       Image {
 
@@ -94,31 +95,45 @@ Rectangle {
         height: 0;
         rotation: 0;
 
-        states: State {
+        states:[ State {
           name: "hidden"; when: robot_hidden == true;
           PropertyChanges {
             target: mazak;
             opacity: 0
           }
+        },
+        State {
+          name: "transparent"; when: (robot_hidden == false && robot_transparent == true);
+          PropertyChanges {
+            target: mazakodron;
+            opacity: 0.5
+          }
         }
+        ]
         
-        transitions: Transition {
+        transitions: [ Transition {
           from: ""; to: "hidden"; reversible: true;
           SequentialAnimation {
             NumberAnimation { target: mazak; property: "opacity"; duration: 5000; easing.type:Easing.InQuad; }
           }
-        }
+        }, Transition {
+          from: ""; to: "transparent"; reversible: true;
+          SequentialAnimation {
+            NumberAnimation { target: mazakodron; property: "opacity"; duration: 500;}
+          }
+        }]
+        
         
         
         Image {
-            id: mazakodron;
-            x: -0.435*paper.width;
-            y: -0.27*paper.height;
-            width: 0.8825*paper.width;
-            height: 0.5505*paper.height;
-            source: "mazakodron.png";
-            asynchronous: true;
-            smooth: true;
+          id: mazakodron;
+          x: -0.435*paper.width;
+          y: -0.27*paper.height;
+          width: 0.8825*paper.width;
+          height: 0.5505*paper.height;
+          source: "mazakodron.png";
+          asynchronous: true;
+          smooth: true;
         }
 
         Image {
@@ -156,4 +171,9 @@ Rectangle {
 
     }
 
+    
+    MouseArea {
+      anchors.fill: parent
+      onClicked: { robot_transparent = !robot_transparent;}
+    }
 }
