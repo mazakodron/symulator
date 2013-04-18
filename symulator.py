@@ -33,19 +33,20 @@ class ImageProvider(QDeclarativeImageProvider):
   
   image = None
   size = None
+  p = None
   
   def __init__(self):
     QDeclarativeImageProvider.__init__(self, QDeclarativeImageProvider.Image)
     self.size = QSize(2631/4, 1860/4)
     self.image = QImage(self.size, QImage.Format_RGB32)
     self.image.fill(QColor(255,255,255))
+    self.p = QPainter()
+    self.p.begin(self.image)
+    self.p.setPen(QPen(QColor(0,0,0), 5));
+    #p.end()
     
   def draw(self, x1, y1, x2, y2):
-    p = QPainter()
-    p.begin(self.image)
-    p.setPen(QPen(QColor(0,0,0), 5));
-    p.drawLine(x1*self.size.width(), y1*self.size.height(), x2*self.size.width(), y2*self.size.height())
-    p.end()
+    self.p.drawLine(x1*self.size.width(), y1*self.size.height(), x2*self.size.width(), y2*self.size.height())
     
   def requestImage(self, id, size, requestedSize):
     return self.image
